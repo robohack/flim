@@ -84,7 +84,7 @@
 (defconst mel-ccl-high-table
   (vconcat
    (mapcar
-    (lambda (v) (nth (lsh v -4) mel-ccl-16-to-256-table))
+    (lambda (v) (nth (ash v -4) mel-ccl-16-to-256-table))
     mel-ccl-256-table)))
 
 (defconst mel-ccl-low-table
@@ -169,7 +169,7 @@ abcdefghijklmnopqrstuvwxyz\
                            `((write r0 ,(vconcat
                                          (mapcar
                                           (lambda (r0)
-                                            (logior (lsh r0 4) v))
+                                            (logior (ash r0 4) v))
                                           mel-ccl-16-table)))
                              (break))
                          '(repeat)))
@@ -233,8 +233,8 @@ abcdefghijklmnopqrstuvwxyz\
 
 (eval-when-compile
 
-(defvar eof-block-branches)
-(defvar eof-block-reg)
+(defvar eof-block-branches nil)
+(defvar eof-block-reg nil)
 (defun mel-ccl-set-eof-block (branch)
   (let ((p (assoc branch eof-block-branches)))
     (unless p
@@ -703,7 +703,7 @@ abcdefghijklmnopqrstuvwxyz\
                               ,(vconcat
                                 (mapcar
                                  (lambda (r0)
-                                   (logior (lsh r0 4) tmp))
+                                   (logior (ash r0 4) tmp))
                                  mel-ccl-16-table)))
                           ;; '=' [\t ]* r1:r0:[0-9A-F] r2:[^0-9A-F]
                           ;; invalid input
@@ -745,7 +745,7 @@ abcdefghijklmnopqrstuvwxyz\
 				(break))))))
 		     `((read r0)
 		       (if (r0 == ?\ )
-			   (,reg |= ,(lsh 1 bit))
+			   (,reg |= ,(ash 1 bit))
 			 (if (r0 != ?\t)
 			     ((r6 = ,(+ (* regnum 28) bit))
 			      (break)))))))
@@ -789,7 +789,7 @@ abcdefghijklmnopqrstuvwxyz\
 	       'append
 	       (mapcar
 		(lambda (bit)
-		  `((if (,reg & ,(lsh 1 bit))
+		  `((if (,reg & ,(ash 1 bit))
 			(write ?\ )
 		      (write ?\t))
 		    (if (r6 == ,(+ (* regnum 28) bit 1))
@@ -957,8 +957,7 @@ MODE allows `text', `comment', `phrase' or nil.  Default value is
    'mel-ccl-uq-rev))
 
 (defun q-encoding-ccl-encoded-length (string &optional mode)
-  (let ((status [nil nil nil nil nil nil nil nil nil]))
-    (fillarray status nil)		; XXX: Is this necessary?
+  (let ((status (make-vector 9 nil)))
     (ccl-execute-on-string
      (cond
       ((eq mode 'text) 'mel-ccl-count-uq)

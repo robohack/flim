@@ -168,7 +168,8 @@ If BOUNDARY is not nil, it is used as message header separator."
 ;;;
 
 (defcustom std11-unfold-strip-leading-tab t
-  "When non-nil, `std11-unfold-string' strips leading TAB, which is mainly added by incorrect folding."
+  "When non-nil, `std11-unfold-string' strips leading TAB, which is
+mainly added by incorrect folding."
   :group 'news
   :group 'mail
   :type 'boolean)
@@ -284,13 +285,13 @@ If BOUNDARY is not nil, it is used as message header separator."
 		      r0
 		      ,@(let* ((count (1+ (max tag ?\\)))
 			       (result (make-vector count '(write-repeat r0))))
-			  (aset result tag '(break))
 			  (aset result ?\\ `((write "\\\\")
 					     (read r0)
 					     ,wrt
 					     (repeat)))
 			  (aset result ?\" '((write "\\\"")
 					     (repeat)))
+			  (aset result tag '(break))
 			  (mapcar 'identity result)))
 		     (write-repeat r0))
 		    (write "\")")
@@ -361,10 +362,12 @@ If BOUNDARY is not nil, it is used as message header separator."
     'std11-default-ccl-lexical-analyzer)
   "Specify CCL-program symbol for `std11-lexical-analyze'.
 When nil, do not use CCL.
-CCL-program returns a string which expresses a cons.
-When cons's cdr is non-nil, CCL-program succeeds in analyzing and car is analyzed result.
-When cdr is nil,CCL-program fails in analyzing.
-If you modify `std11-lexical-analyzer', set this variable to nil or prepare corresponding CCL-program."
+
+CCL-program returns a string which expresses a cons.  When cons's
+cdr is non-nil, CCL-program succeeds in analyzing and car is
+analyzed result.  When cdr is nil, CCL-program fails in analyzing.
+If you modify `std11-lexical-analyzer', set this variable to nil
+or prepare corresponding CCL-program."
   :group 'news
   :group 'mail
   :type '(choice symbol (const :tag "Do not use CCL." nil)))

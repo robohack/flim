@@ -92,12 +92,12 @@
 		      r0
 		      ,@(let* ((count (1+ (max tag ?\\)))
 			       (result (make-vector count '(write-repeat r0))))
-			  (aset result tag '(break))
 			  (aset result ?\\ `((write "\\\\")
 					     (read r0)
 					     ,wrt
 					     (repeat)))
 			  (aset result ?\" '((write "\\\"") (repeat)))
+			  (aset result tag '(break))
 			  (mapcar 'identity result)))
 		     (write-repeat r0))
 		    (write "\")")
@@ -162,7 +162,8 @@
   "Specify CCL-program symbol for `mime-lexical-analyze'.
 When nil, do not use CCL.
 See docstring of `std11-ccl-lexical-analyzer' for details of CCL-program.
-If you modify `mime-lexical-analyzer', set this variable to nil or prepare corresponding CCL-program."
+If you modify `mime-lexical-analyzer', set this variable to nil
+or prepare corresponding CCL-program."
   :group 'mime
   :type '(choice symbol (const :tag "Do not use CCL." nil)))
 
@@ -576,7 +577,7 @@ Return value is an alist of MIME parameter values."
 (defun mime-parse-parameters (tokens)
   "Parse TOKENS as MIME parameter values.
 Return a property list, which is a list of the form
-\(PARAMETER-NAME1 VALUE1 PARAMETER-NAME2 VALUE2...)."
+(PARAMETER-NAME1 VALUE1 PARAMETER-NAME2 VALUE2...)."
   (let (params attribute)
     (while (and tokens
 		(eq (car (car tokens)) 'tspecials)

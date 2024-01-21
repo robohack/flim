@@ -63,20 +63,40 @@
 
 (defcustom sasl-xoauth2-host-url-table
   '(;; Gmail
-    ("gmail\\.com$"
+    ("\\.gmail\\.com$"
      "https://accounts.google.com/o/oauth2/v2/auth"
      "https://www.googleapis.com/oauth2/v4/token"
      "https://mail.google.com/"
-     nil)
+     ;; redirect URI is required
+     "http://localhost/result")
     ;; Outlook.com
-    ("outlook\\.com$"
+    ("\\.outlook\\.com$"
      "https://login.live.com/oauth20_authorize.srf"
      "https://login.live.com/oauth20_token.srf"
      "wl.offline_access wl.imap"
      ;; You need register redirect URL at Application Registration Portal
      ;; https://apps.dev.microsoft.com/
-     "http://localhost/result"))
-  "List of OAuth 2.0 URLs.  Each element of list is regexp for host, auth-url, token-url, scope and redirect-uri (optional)."
+     "http://localhost/result")
+    ;; office365
+    ("\\.office365\\.com$"
+     "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"
+     "https://login.microsoftonline.com/common/oauth2/v2.0/token"
+     "https://outlook.office365.com/IMAP.AccessAsUser.All https://outlook.office365.com/POP.AccessAsUser.All https://outlook.office365.com/SMTP.Send offline_access"
+     nil)
+    ;; yahoo.com
+    ("\\.yahoo\\.com$"
+     "https://api.login.yahoo.com/oauth2/request_auth"
+     "https://api.login.yahoo.com/oauth2/get_token"
+     "mail-w"
+     nil)
+    ;; aol.com
+    ("\\.aol\\.com$"
+     "https://api.login.aol.com/oauth2/request_auth"
+     "https://api.login.aol.com/oauth2/get_token"
+     "mail-w"
+     nil))
+  "List of OAuth 2.0 URLs.  Each element of list is regexp for host,
+auth-url, token-url, scope and redirect-uri (optional)."
       :type '(repeat (list
 		      (regexp :tag "Regexp for Host")
 		      (string :tag "Auth-URL")
@@ -87,14 +107,8 @@
 
 (defcustom sasl-xoauth2-host-user-id-table
   nil
-  "List of OAuth 2.0 Client IDs.  Each element of list is regexp for host, regexp for User ID, client ID and client secret (optional).
-Below is example to use Thunderbird's client ID and secret (not recommended, just an expample).
-
-(setq sasl-xoauth2-host-user-id-table
-      '((\"\\\\.gmail\\\\.com$\"
-	 \".\"
-	 \"91623021742-ud877vhta8ch9llegih22bc7er6589ar.apps.googleusercontent.com\"
-	 \"iBn5rLbhbm_qoPbdGkgX81Dj\"))
+  "List of OAuth 2.0 Client IDs.  Each element of list is regexp for
+host, regexp for User ID, client ID and client secret (optional).
 "
   :type '(repeat (list
 		  (regexp :tag "Regexp for Host")
@@ -116,13 +130,16 @@ Below is example to use Thunderbird's client ID and secret (not recommended, jus
 (defun sasl-xoauth2-refresh-access (token)
   "Refresh OAuth access TOKEN.
 TOKEN should be obtained with `oauth2-request-access'."
-  (let ((response
-	 (oauth2-make-access-request
-          (oauth2-token-token-url token)
-          (concat "client_id=" (oauth2-token-client-id token)
-                  "&client_secret=" (oauth2-token-client-secret token)
-                  "&refresh_token=" (oauth2-token-refresh-token token)
-                  "&grant_type=refresh_token"))))
+  ;; url package would fail on Windows without EOL conversion.
+  (let* ((inhibit-eol-conversion nil)
+	 (coding-system-for-read nil)
+	 (response
+	  (oauth2-make-access-request
+           (oauth2-token-token-url token)
+           (concat "client_id=" (oauth2-token-client-id token)
+                   "&client_secret=" (oauth2-token-client-secret token)
+                   "&refresh_token=" (oauth2-token-refresh-token token)
+                   "&grant_type=refresh_token"))))
     (setf (oauth2-token-access-token token)
           (cdr (assq 'access_token response)))
     ;; Update authorization time.
@@ -188,6 +205,9 @@ TOKEN should be obtained with `oauth2-request-access'."
 (defun sasl-xoauth2-response (client _step &optional _retry)
   (let ((host (sasl-client-server client))
 	(user (sasl-client-name client))
+	;; url package would fail on Windows without EOL conversion.
+	(inhibit-eol-conversion nil)
+	(coding-system-for-read nil)
 	info access-token oauth2-token
 	auth-url token-url client-id scope redirect-uri client-secret)
     (setq info (sasl-xoauth2-resolve-urls host user)

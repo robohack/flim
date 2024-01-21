@@ -156,7 +156,9 @@ Read text is decoded as CODING-SYSTEM."
 (defvar mel-b-builtin t)
 
 (defcustom mel-b-builtin-garbage-strategy 'asis
-  "When non-nil, base64 decoder functions handle non-encoded garbage.  When value is asis decoders keep garbage and when value is discard decoders delete garbage."
+"When non-nil, base64 decoder functions handle non-encoded
+garbage.  When value is asis decoders keep garbage and when value
+is discard decoders delete garbage."
   :group 'mime
   :type '(choice (const :tag "Keep as is" asis)
 		 (const :tag "Discard" discard)
@@ -168,7 +170,9 @@ Read text is decoded as CODING-SYSTEM."
 (mel-define-method-function (mime-encode-string string (nil "base64"))
 			      'base64-encode-string)
 (defun mel-b-builtin-decode-string (string)
-  "Decode base64 encoded STRING with garbage handling.  Garbage handling strategy is decided by `mel-b-builtin-garbage-strategy'.  Return decoded string."
+  "Decode base64 encoded STRING with garbage handling.
+Garbage handling strategy is decided by `mel-b-builtin-garbage-strategy'.
+Return decoded string."
   (if (null mel-b-builtin-garbage-strategy)
       (base64-decode-string string)
     (condition-case error
@@ -195,7 +199,8 @@ Read text is decoded as CODING-SYSTEM."
 (mel-define-method-function (mime-encode-region start end (nil "base64"))
 			    'base64-encode-region)
 (defun mel-b-builtin-decode-region (start end)
-  "Decode base64 encoded region between START and END with garbage handling.  Garbage handling strategy is decided by `mel-b-builtin-garbage-strategy'."
+  "Decode base64 encoded region between START and END with garbage handling.
+Garbage handling strategy is decided by `mel-b-builtin-garbage-strategy'."
   (if (null mel-b-builtin-garbage-strategy)
       (base64-decode-region start end)
     (condition-case error
